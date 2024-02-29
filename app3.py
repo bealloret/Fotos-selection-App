@@ -8,13 +8,12 @@ import requests
 from io import BytesIO
 
 def main():
-    # Define the raw GitHub URL of the folder containing the images
-    github_raw_url = "https://github.com/bealloret/Fotos-selection-App/tree/main/images/"
+     st.title("Image Evaluation App")
     
-    # Replace 'your_access_token' with your actual GitHub access token
-    access_token = 
+    # Define the raw GitHub URL of the folder containing the images
+    github_raw_url = "https://github.com/bealloret/Fotos-selection-App/raw/main/images/"
 
-    image_names = load_image_names_from_github(github_raw_url, access_token)
+    image_names = load_image_names_from_github(github_raw_url)
 
     if image_names:
         # Initialize session state attributes
