@@ -11,7 +11,7 @@ def main():
     st.title("Image Evaluation App")
     
     # Define the raw GitHub URL of the folder containing the images
-    github_raw_url = "https://github.com/bealloret/Fotos-selection-App/images"
+    github_raw_url = "https://github.com/bealloret/Fotos-selection-App/tree/main/images/"
 
     image_names = load_image_names_from_github(github_raw_url)
 
