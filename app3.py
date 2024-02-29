@@ -8,12 +8,13 @@ import requests
 from io import BytesIO
 
 def main():
-    st.title("Image Evaluation App")
-    
     # Define the raw GitHub URL of the folder containing the images
-    github_raw_url = "https://raw.githubusercontent.com/bealloret/Fotos-selection-App/main/images/"
+    github_raw_url = "https://github.com/bealloret/Fotos-selection-App/tree/main/images/"
+    
+    # Replace 'your_access_token' with your actual GitHub access token
+    access_token = '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'
 
-    image_names = load_image_names_from_github(github_raw_url)
+    image_names = load_image_names_from_github(github_raw_url, access_token)
 
     if image_names:
         # Initialize session state attributes
@@ -31,10 +32,9 @@ def main():
         elif page == "Summary":
             show_summary_page()
 
-def load_image_names_from_github(github_raw_url):
-    # Fetch the list of image names from the GitHub repository
-    response = requests.get(github_raw_url)
-    print(response.text)  # Add this line to print the response text
+def load_image_names_from_github(github_raw_url, access_token):
+    headers = {"Authorization": f"token {access_token}"}
+    response = requests.get(github_raw_url, headers=headers)
     if response.status_code == 200:
         # Extract image names from the response
         image_names = [filename for filename in response.text.splitlines() if filename.endswith(('.png', '.jpg', '.jpeg'))]
