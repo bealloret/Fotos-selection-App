@@ -34,6 +34,7 @@ def main():
 def load_image_names_from_github(github_raw_url):
     # Fetch the list of image names from the GitHub repository
     response = requests.get(github_raw_url)
+    print(response.text)  # Add this line to print the response text
     if response.status_code == 200:
         # Extract image names from the response
         image_names = [filename for filename in response.text.splitlines() if filename.endswith(('.png', '.jpg', '.jpeg'))]
