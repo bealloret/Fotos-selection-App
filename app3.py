@@ -4,37 +4,38 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import requests
+from bs4 import BeautifulSoup
 
 def main():
     st.title("Image Evaluation App")
     
-     # Define the URL of the GitHub repository containing the images
-    github_repo_url = "https://raw.githubusercontent.com/bealloret/Fotos-Selection-App/main/images/"
+    # Define the URL of the GitHub repository containing the images
+    github_repo_url = "https://github.com/bealloret/Fotos-selection-App/tree/main/images"
 
     # Fetch the image paths from the GitHub repository
-    image_paths = load_images_from_github(github_repo_url)
-    image_names = [os.path.basename(image_path) for image_path in image_paths]
+    image_urls = load_images_from_github(github_repo_url)
 
-    if image_paths:
+    if image_urls:
         # Initialize session state attributes
         if "selected_images" not in st.session_state:
             st.session_state.selected_images = {}
         if "all_images" not in st.session_state:
-            st.session_state.all_images = {image_name: 0 for image_name in image_names}
+            st.session_state.all_images = {os.path.basename(image_url): 0 for image_url in image_urls}
 
         # Display the page content
         st.sidebar.header("Navigation")
         page = st.sidebar.radio("Go to", ["Pictures", "Summary"])
 
         if page == "Pictures":
-            show_pictures_page(image_paths)
+            show_pictures_page(image_urls)
         elif page == "Summary":
             show_summary_page()
             
-def show_pictures_page(images):
+def show_pictures_page(image_urls):
     selected_images = st.session_state.selected_images
-    for i, image_path in enumerate(images):
-        image = Image.open(image_path)
+    for i, image_url in enumerate(image_urls):
+        image = fetch_image(image_url)
         st.write(f"### Image {i+1}")
             # Display image and ask user to select
         col1, col2 = st.columns([3, 1])
@@ -46,23 +47,30 @@ def show_pictures_page(images):
             selection = st.radio("", ("Unsure", "Yes", "No"), key=f"radio_{i}")
             if selection == "Yes":
                 rating = st.slider("Evaluation (1 to 5)", 1, 5, key=f"slider_{i}")
-                selected_images[os.path.basename(image_path)] = rating
+                selected_images[os.path.basename(image_url)] = rating
             elif selection == "No":
-                selected_images[os.path.basename(image_path)] = -1  # Store -1 for "No"
+                selected_images[os.path.basename(image_url)] = -1  # Store -1 for "No"
             if st.button("Open/Close Original Size", key=f"button_{i}"):
                 show_image = st.session_state.get(f"show_image_{i}", False)
                 st.session_state[f"show_image_{i}"] = not show_image
                 if not show_image:
                     st.image(image, caption=f"Image {i+1}")
                 
-def load_images_from_folder(folder_path):
-    image_paths = []
-    if os.path.isdir(folder_path):
-        for filename in os.listdir(folder_path):
-            if filename.endswith(('.png', '.jpg', '.jpeg')):
-                image_path = os.path.join(folder_path, filename)
-                image_paths.append(image_path)
-    return image_paths
+def load_images_from_github(repo_url):
+    response = requests.get(repo_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    image_urls = []
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href and href.endswith(('.png', '.jpg', '.jpeg')):
+            image_urls.append(href)
+    return image_urls
+
+def fetch_image(url):
+    # Fetch the image from the URL
+    response = requests.get(url)
+    image = Image.open(BytesIO(response.content))
+    return image
 
 def show_summary_page():
     st.title("Summary")
@@ -112,3 +120,4 @@ def show_summary_page():
 
 if __name__ == "__main__":
     main()
+
