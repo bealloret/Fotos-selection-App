@@ -31,9 +31,8 @@ def main():
          elif page == "Summary":
              show_summary_page()
 
-def load_image_names_from_github(github_raw_url, access_token):
-    headers = {"Authorization": f"token {access_token}"}
-    response = requests.get(github_raw_url, headers=headers)
+def load_image_names_from_github(github_raw_url):
+    response = requests.get(github_raw_url)
     if response.status_code == 200:
         # Extract image names from the response
         image_names = [filename for filename in response.text.splitlines() if filename.endswith(('.png', '.jpg', '.jpeg'))]
