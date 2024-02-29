@@ -5,72 +5,72 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
-from bs4 import BeautifulSoup
+from io import BytesIO
 
 def main():
     st.title("Image Evaluation App")
     
-    # Define the URL of the GitHub repository containing the images
-    github_repo_url = "https://github.com/bealloret/Fotos-selection-App/tree/main/images"
+    # Define the raw GitHub URL of the folder containing the images
+    github_raw_url = "https://raw.githubusercontent.com/bealloret/Fotos-selection-App/main/images/"
 
-    # Fetch the image paths from the GitHub repository
-    image_urls = load_images_from_github(github_repo_url)
+    image_names = load_image_names_from_github(github_raw_url)
 
-    if image_urls:
+    if image_names:
         # Initialize session state attributes
         if "selected_images" not in st.session_state:
             st.session_state.selected_images = {}
         if "all_images" not in st.session_state:
-            st.session_state.all_images = {os.path.basename(image_url): 0 for image_url in image_urls}
+            st.session_state.all_images = {image_name: 0 for image_name in image_names}
 
         # Display the page content
         st.sidebar.header("Navigation")
         page = st.sidebar.radio("Go to", ["Pictures", "Summary"])
 
         if page == "Pictures":
-            show_pictures_page(image_urls)
+            show_pictures_page(image_names, github_raw_url)
         elif page == "Summary":
             show_summary_page()
-            
-def show_pictures_page(image_urls):
+
+def load_image_names_from_github(github_raw_url):
+    # Fetch the list of image names from the GitHub repository
+    response = requests.get(github_raw_url)
+    if response.status_code == 200:
+        # Extract image names from the response
+        image_names = [filename for filename in response.text.splitlines() if filename.endswith(('.png', '.jpg', '.jpeg'))]
+        return image_names
+    else:
+        st.error("Failed to fetch image names from GitHub.")
+        return []
+
+def show_pictures_page(image_names, github_raw_url):
     selected_images = st.session_state.selected_images
-    for i, image_url in enumerate(image_urls):
-        image = fetch_image(image_url)
-        st.write(f"### Image {i+1}")
+    for i, image_name in enumerate(image_names):
+        image_url = github_raw_url + image_name
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            image = Image.open(BytesIO(response.content))
+            st.write(f"### Image {i+1}")
             # Display image and ask user to select
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            small_image = image.resize((200, 250))
-            st.image(small_image, caption=f"Image {i+1}")
-        with col2:
-            st.write("Do you like this picture?")
-            selection = st.radio("", ("Unsure", "Yes", "No"), key=f"radio_{i}")
-            if selection == "Yes":
-                rating = st.slider("Evaluation (1 to 5)", 1, 5, key=f"slider_{i}")
-                selected_images[os.path.basename(image_url)] = rating
-            elif selection == "No":
-                selected_images[os.path.basename(image_url)] = -1  # Store -1 for "No"
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                small_image = image.resize((200, 250))
+                st.image(small_image, caption=f"Image {i+1}")
+            with col2:
+                st.write("Do you like this picture?")
+                selection = st.radio("", ("Unsure", "Yes", "No"), key=f"radio_{i}")
+                if selection == "Yes":
+                    rating = st.slider("Evaluation (1 to 5)", 1, 5, key=f"slider_{i}")
+                    selected_images[image_name] = rating
+                elif selection == "No":
+                    selected_images[image_name] = -1  # Store -1 for "No"
             if st.button("Open/Close Original Size", key=f"button_{i}"):
                 show_image = st.session_state.get(f"show_image_{i}", False)
                 st.session_state[f"show_image_{i}"] = not show_image
                 if not show_image:
                     st.image(image, caption=f"Image {i+1}")
-                
-def load_images_from_github(repo_url):
-    response = requests.get(repo_url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    image_urls = []
-    for link in soup.find_all('a'):
-        href = link.get('href')
-        if href and href.endswith(('.png', '.jpg', '.jpeg')):
-            image_urls.append(href)
-    return image_urls
+        else:
+            st.error(f"Failed to fetch image {image_name} from GitHub.")
 
-def fetch_image(url):
-    # Fetch the image from the URL
-    response = requests.get(url)
-    image = Image.open(BytesIO(response.content))
-    return image
 
 def show_summary_page():
     st.title("Summary")
