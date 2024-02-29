@@ -9,27 +9,27 @@ from io import BytesIO
 
 def main():
      st.title("Image Evaluation App")
-    
-    # Define the raw GitHub URL of the folder containing the images
-    github_raw_url = "https://github.com/bealloret/Fotos-selection-App/raw/main/images/"
+     
+     # Define the raw GitHub URL of the folder containing the images
+     github_raw_url = "https://github.com/bealloret/Fotos-selection-App/raw/main/images/"
 
-    image_names = load_image_names_from_github(github_raw_url)
+     image_names = load_image_names_from_github(github_raw_url)
 
-    if image_names:
-        # Initialize session state attributes
-        if "selected_images" not in st.session_state:
-            st.session_state.selected_images = {}
-        if "all_images" not in st.session_state:
-            st.session_state.all_images = {image_name: 0 for image_name in image_names}
+     if image_names:
+         # Initialize session state attributes
+         if "selected_images" not in st.session_state:
+             st.session_state.selected_images = {}
+         if "all_images" not in st.session_state:
+             st.session_state.all_images = {image_name: 0 for image_name in image_names}
 
-        # Display the page content
-        st.sidebar.header("Navigation")
-        page = st.sidebar.radio("Go to", ["Pictures", "Summary"])
+         # Display the page content
+         st.sidebar.header("Navigation")
+         page = st.sidebar.radio("Go to", ["Pictures", "Summary"])
 
-        if page == "Pictures":
-            show_pictures_page(image_names, github_raw_url)
-        elif page == "Summary":
-            show_summary_page()
+         if page == "Pictures":
+             show_pictures_page(image_names, github_raw_url)
+         elif page == "Summary":
+             show_summary_page()
 
 def load_image_names_from_github(github_raw_url, access_token):
     headers = {"Authorization": f"token {access_token}"}
