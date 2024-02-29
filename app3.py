@@ -8,10 +8,11 @@ import numpy as np
 def main():
     st.title("Image Evaluation App")
     
-     #Define the folder path containing the predefined set of pictures
-    image_folder_path = "C:/Users/beall/ColabDocs/FotosApp/images"
+     # Define the URL of the GitHub repository containing the images
+    github_repo_url = "https://raw.githubusercontent.com/bealloret/Fotos-Selection-App/main/images/"
 
-    image_paths = load_images_from_folder(image_folder_path)
+    # Fetch the image paths from the GitHub repository
+    image_paths = load_images_from_github(github_repo_url)
     image_names = [os.path.basename(image_path) for image_path in image_paths]
 
     if image_paths:
