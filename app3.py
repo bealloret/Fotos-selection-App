@@ -12,7 +12,7 @@ def main():
     github_raw_url = "https://github.com/bealloret/Fotos-selection-App/tree/main/images/"
     
     # Replace 'your_access_token' with your actual GitHub access token
-    access_token = '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'
+    access_token = 
 
     image_names = load_image_names_from_github(github_raw_url, access_token)
 
